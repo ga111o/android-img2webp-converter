@@ -27,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int PICK_IMAGE_REQUEST = 2;
     private Uri selectedImageUri;
 
+    boolean DEBUG = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openImageChooser() {
-        Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();
+        if(DEBUG){Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();}
 
         Intent intent = new Intent();
         intent.setType("image/*");
@@ -61,7 +63,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void saveImageToDownloads() {
         try {
-            Toast.makeText(this, "DEBUG: saveImg2Download func - try", Toast.LENGTH_SHORT).show();
+            if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download func - try", Toast.LENGTH_SHORT).show();}
 
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
             File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
@@ -70,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
             Cursor cursor = getContentResolver().query(selectedImageUri, filePathColumn, null, null, null);
             String imageName = "converted_image";
             if (cursor != null && cursor.moveToFirst()) {
-                Toast.makeText(this, "DEBUG: saveImg2Download - try - func", Toast.LENGTH_SHORT).show();
+                if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download - try - func", Toast.LENGTH_SHORT).show();}
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 imageName = cursor.getString(columnIndex);
                 imageName = imageName.substring(0, imageName.lastIndexOf('.')) + ".webp";
@@ -81,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
 
             // it shows scary message `Call requires API level 26` but not necessary, working well!
             try (OutputStream outputStream = Files.newOutputStream(imageFile.toPath())) {
-                Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();
+                if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();}
                 bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outputStream);
                 outputStream.flush();
                 Toast.makeText(this, "done!", Toast.LENGTH_SHORT).show();
@@ -94,7 +96,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean checkPermission() {
-        Toast.makeText(this, "DEBUG: checkPermission", Toast.LENGTH_SHORT).show();
+        if(DEBUG){Toast.makeText(this, "DEBUG: checkPermission", Toast.LENGTH_SHORT).show();}
 
         int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         return permissionCheck == PackageManager.PERMISSION_GRANTED;
@@ -109,7 +111,6 @@ public class MainActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "good!", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "permission required", Toast.LENGTH_SHORT).show();
             }
