@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">img to webp converter</string>
+    <string name="select_img">select img</string>
+</resources>
