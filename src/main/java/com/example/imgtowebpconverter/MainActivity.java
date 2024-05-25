@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.Toast;
 
 import java.io.File;
@@ -84,7 +85,14 @@ public class MainActivity extends AppCompatActivity {
             // it shows scary message `Call requires API level 26` but not necessary, working well!
             try (OutputStream outputStream = Files.newOutputStream(imageFile.toPath())) {
                 if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();}
-                bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outputStream);
+                CheckBox testCheckBox = findViewById(R.id.testCheckBox);
+                if (testCheckBox.isChecked()) {
+                    // to hevc
+                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outputStream);
+                } else {
+                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outputStream);
+                }
+
                 outputStream.flush();
                 Toast.makeText(this, "done!", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
