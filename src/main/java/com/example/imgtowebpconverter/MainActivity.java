@@ -13,9 +13,17 @@ import android.provider.MediaStore;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+
+import android.view.MenuInflater;
+import android.view.View;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.PopupMenu;
 import android.widget.Toast;
 
 import java.io.File;
@@ -39,8 +47,26 @@ public class MainActivity extends AppCompatActivity {
         Button selectImgButton = findViewById(R.id.select_img_button);
         selectImgButton.setOnClickListener(v -> openImageChooser());
 
+        CheckBox advancedOptionsCheckBox = findViewById(R.id.advancedOptionsCheckBox);
+        advancedOptionsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> advancedOptions());
+
+        advancedOptionsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> advancedOptions());
+
         if (!checkPermission()) {
             requestPermission();
+        }
+    }
+
+
+
+    private void advancedOptions(){
+        LinearLayout advancedOptionsLinearLayout = findViewById(R.id.advancedOptionsLinearLayout);
+        CheckBox advancedOptionsCheckBox = findViewById(R.id.advancedOptionsCheckBox);
+
+        if(advancedOptionsCheckBox.isChecked()){
+            advancedOptionsLinearLayout.setVisibility(View.VISIBLE);
+        } else {
+            advancedOptionsLinearLayout.setVisibility(View.GONE);
         }
     }
 
@@ -69,6 +95,37 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        WebView webView = findViewById(R.id.webview);
+        if (webView.getVisibility() == View.VISIBLE) {
+            webView.setVisibility(View.GONE);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    public void showPopupMenu(View view) {
+        PopupMenu popup = new PopupMenu(this, view);
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.more_options, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.githubLink) {
+                WebView webView = findViewById(R.id.webview);
+                webView.setWebViewClient(new WebViewClient());
+                webView.loadUrl("https://github.com/ga111o/android-img2webp-converter");
+                webView.setVisibility(View.VISIBLE);
+                return true;
+            }
+            return false;
+        });
+
+        popup.show();
+    }
+
+
+
     private void saveImageToDownloads() {
         try {
             if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download func - try", Toast.LENGTH_SHORT).show();}
@@ -92,14 +149,7 @@ public class MainActivity extends AppCompatActivity {
             // it shows scary message `Call requires API level 26` but not necessary, working well!
             try (OutputStream outputStream = Files.newOutputStream(imageFile.toPath())) {
                 if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();}
-                CheckBox testCheckBox = findViewById(R.id.testCheckBox);
-                if (testCheckBox.isChecked()) {
-                    // to hevc
-                    bitmap.compress(Bitmap.CompressFormat.WEBP, getImgQuality(), outputStream);
-                } else {
-                    bitmap.compress(Bitmap.CompressFormat.WEBP, getImgQuality(), outputStream);
-                }
-
+                bitmap.compress(Bitmap.CompressFormat.WEBP, getImgQuality(), outputStream);
                 outputStream.flush();
                 Toast.makeText(this, "done!", Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
