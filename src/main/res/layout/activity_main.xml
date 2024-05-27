@@ -4,49 +4,142 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="50dp"
+    android:background="#dddddd"
     tools:context=".MainActivity">
-
-    <CheckBox
-        android:id="@+id/testCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="to hevc"/>
-
-    <CheckBox
-        android:id="@+id/advancedCheckBox"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="advanced option"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:visibility="gone">
-
-        <TextView
-            android:layout_width="wrap_content"
+        android:layout_height="60dp"
+        android:orientation="horizontal">
+    <TextView
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="quality : "
-            android:textSize="18sp"/>
-
-        <EditText
-            android:id="@+id/qualityEditText"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"/>
-
+            android:layout_weight="1"
+            android:layout_gravity="center_vertical"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:layout_marginStart="20dp"
+            android:text="@string/title"/>
+        <ImageView
+            android:id="@+id/moreOptionsIcon"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="15dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="10dp"
+            android:src="@drawable/options"
+            android:onClick="showPopupMenu"
+            android:contentDescription="@string/more_options"/>
     </LinearLayout>
 
-    <Button
-        android:id="@+id/select_img_button"
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:textSize="20sp"
-        android:layout_marginTop="30dp"
-        android:text="@string/select_img" />
+        android:layout_height="match_parent"
+        android:padding="20dp"
+        android:orientation="vertical"
+        android:background="@drawable/background">
+
+        <WebView
+            android:id="@+id/webview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:visibility="gone"
+            />
+
+    <CheckBox
+        android:id="@+id/advancedOptionsCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="17sp"
+        android:layout_marginStart="-8dp"
+        android:text="@string/advanced_option"/>
+        <LinearLayout
+            android:id="@+id/advancedOptionsLinearLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="visible">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/quality"
+                    android:textSize="18sp"/>
+
+                <EditText
+                    android:id="@+id/qualityEditText"
+                    android:layout_width="135dp"
+                    android:text="100"
+                    android:layout_height="50dp"/>
+
+                <Button
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="output folder"
+                    android:background="@drawable/button"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_marginTop="5dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Blank will keep original size"
+                android:layout_marginBottom="-10dp"
+                android:textColor="#999999"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="visible">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="size : "
+                    android:textSize="18sp"/>
+                <EditText
+                    android:id="@+id/imgSizeWidthEditText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:height="50dp"
+                    android:hint="width"
+                    android:layout_height="wrap_content"/>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="x"
+                    android:textSize="18sp"/>
+                <EditText
+                    android:id="@+id/imgSizeHeightEditText"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:height="50dp"
+                    android:hint="height"
+                    android:layout_height="wrap_content"/>
+            </LinearLayout>
 
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="bottom">
+            <Button
+                android:id="@+id/select_img_button"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:textSize="20sp"
+                android:layout_marginTop="30dp"
+                android:text="@string/select_img"
+                android:background="@drawable/button"/>
+        </LinearLayout>
+    </LinearLayout>
 
 
 </LinearLayout>
