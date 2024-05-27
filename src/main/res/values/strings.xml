@@ -1,4 +1,12 @@
 <resources>
     <string name="app_name">img to webp converter</string>
-    <string name="select_img">select img</string>
+    <string name="select_img">select &amp; convert img</string>
+    <string name="title">WebP Converter</string>
+    <string name="about_me">About Me</string>
+    <string name="source_code">Source Code</string>
+    <string name="quality">"quality : "</string>
+    <string name="size">"size : "</string>
+    <string name="advanced_option">advanced option</string>
+    <string name="my_info">2024404060 강민혁</string>
+    <string name="more_options">more options</string>
 </resources>
