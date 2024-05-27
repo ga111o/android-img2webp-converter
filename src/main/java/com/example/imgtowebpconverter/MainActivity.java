@@ -15,6 +15,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import java.io.File;
@@ -41,6 +42,12 @@ public class MainActivity extends AppCompatActivity {
         if (!checkPermission()) {
             requestPermission();
         }
+    }
+
+    private Integer getImgQuality(){
+        EditText qualityEditText = findViewById(R.id.qualityEditText);
+        Integer quality = Integer.valueOf(qualityEditText.getText().toString());
+        return quality;
     }
 
     private void openImageChooser() {
@@ -88,9 +95,9 @@ public class MainActivity extends AppCompatActivity {
                 CheckBox testCheckBox = findViewById(R.id.testCheckBox);
                 if (testCheckBox.isChecked()) {
                     // to hevc
-                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outputStream);
+                    bitmap.compress(Bitmap.CompressFormat.WEBP, getImgQuality(), outputStream);
                 } else {
-                    bitmap.compress(Bitmap.CompressFormat.WEBP, 100, outputStream);
+                    bitmap.compress(Bitmap.CompressFormat.WEBP, getImgQuality(), outputStream);
                 }
 
                 outputStream.flush();
