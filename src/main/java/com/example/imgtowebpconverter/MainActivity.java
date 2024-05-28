@@ -57,7 +57,21 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void imageSize(){
+        EditText imgSizeWidthEditText = findViewById(R.id.imgSizeWidthEditText);
+        EditText imgSizeHeightEditText = findViewById(R.id.imgSizeHeightEditText);
 
+        if((imgSizeWidthEditText == null) || (imgSizeHeightEditText == null)) {
+            Toast.makeText(this, "width & height is null!", Toast.LENGTH_SHORT).show();
+        } else {
+            int imgWidth = Integer.parseInt(imgSizeWidthEditText.getText().toString());
+            int imgHeight = Integer.parseInt(imgSizeHeightEditText.getText().toString());
+
+            if(DEBUG){Toast.makeText(this, "img width: "+imgWidth+"   img height: "+imgHeight, Toast.LENGTH_SHORT).show();}
+        }
+    }
+
+    // output folder funcl
 
     private void advancedOptions(){
         LinearLayout advancedOptionsLinearLayout = findViewById(R.id.advancedOptionsLinearLayout);
@@ -78,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void openImageChooser() {
         if(DEBUG){Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();}
-
         Intent intent = new Intent();
         intent.setType("image/*");
         intent.setAction(Intent.ACTION_GET_CONTENT);
