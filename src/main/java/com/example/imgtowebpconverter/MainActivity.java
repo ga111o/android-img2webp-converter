@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.documentfile.provider.DocumentFile;
 
 import android.view.MenuInflater;
 import android.view.View;
@@ -28,6 +29,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 
@@ -50,28 +52,22 @@ public class MainActivity extends AppCompatActivity {
         CheckBox advancedOptionsCheckBox = findViewById(R.id.advancedOptionsCheckBox);
         advancedOptionsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> advancedOptions());
 
-        advancedOptionsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> advancedOptions());
-
         if (!checkPermission()) {
             requestPermission();
         }
+
+        Button outputFolderButton = findViewById(R.id.outputFolderButton);
+        outputFolderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                startActivityForResult(intent, 1);
+            }
+        });
     }
-
-    private void imageSize(){
-        EditText imgSizeWidthEditText = findViewById(R.id.imgSizeWidthEditText);
-        EditText imgSizeHeightEditText = findViewById(R.id.imgSizeHeightEditText);
-
-        if((imgSizeWidthEditText == null) || (imgSizeHeightEditText == null)) {
-            Toast.makeText(this, "width & height is null!", Toast.LENGTH_SHORT).show();
-        } else {
-            int imgWidth = Integer.parseInt(imgSizeWidthEditText.getText().toString());
-            int imgHeight = Integer.parseInt(imgSizeHeightEditText.getText().toString());
-
-            if(DEBUG){Toast.makeText(this, "img width: "+imgWidth+"   img height: "+imgHeight, Toast.LENGTH_SHORT).show();}
-        }
-    }
-
-    // output folder funcl
 
     private void advancedOptions(){
         LinearLayout advancedOptionsLinearLayout = findViewById(R.id.advancedOptionsLinearLayout);
@@ -87,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
     private Integer getImgQuality(){
         EditText qualityEditText = findViewById(R.id.qualityEditText);
         Integer quality = Integer.valueOf(qualityEditText.getText().toString());
+
         return quality;
     }
 
@@ -101,10 +98,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if(DEBUG){Toast.makeText(this, "DEBUG: onActivityResult ftf", Toast.LENGTH_SHORT).show();}
 
         if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
             selectedImageUri = data.getData();
-            saveImageToDownloads();
+            imageSize();
+        } else if (requestCode == 1 && resultCode == RESULT_OK) {
+            if(DEBUG){Toast.makeText(this, "DEBUG: why its not working......", Toast.LENGTH_SHORT).show();}
+            selectedFolderUri = data.getData();
+            if (selectedFolderUri != null) {
+                getContentResolver().takePersistableUriPermission(selectedFolderUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                Toast.makeText(this, "folder selected", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
@@ -136,34 +141,65 @@ public class MainActivity extends AppCompatActivity {
         popup.show();
     }
 
+    private Uri selectedFolderUri;
 
+    private Bitmap resizeImage(Bitmap originalImage, float scalePercentage) {
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
 
-    private void saveImageToDownloads() {
+        int newWidth = (int) (width * scalePercentage / 100);
+        int newHeight = (int) (height * scalePercentage / 100);
+
+        return Bitmap.createScaledBitmap(originalImage, newWidth, newHeight, true);
+    }
+
+    private void imageSize() {
+        EditText imgSizeEditText = findViewById(R.id.imgSizeEditText);
+        float scalePercentage;
         try {
-            if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download func - try", Toast.LENGTH_SHORT).show();}
+            scalePercentage = Float.parseFloat(imgSizeEditText.getText().toString());
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
+        try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
-            File downloadsFolder = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            Bitmap resizedBitmap = resizeImage(bitmap, scalePercentage);
+            saveImageToDownloads(resizedBitmap);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void saveImageToDownloads(Bitmap bitmap) {
+        try {
+            if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download func - try", Toast.LENGTH_SHORT).show();}
+
+            if (selectedFolderUri == null) {
+                selectedFolderUri = Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS));
+                Toast.makeText(this, "saved at Download folder", Toast.LENGTH_SHORT).show();
+            }
 
             String[] filePathColumn = {MediaStore.Images.Media.DISPLAY_NAME};
             Cursor cursor = getContentResolver().query(selectedImageUri, filePathColumn, null, null, null);
             String imageName = "converted_image";
             if (cursor != null && cursor.moveToFirst()) {
-                if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download - try - func", Toast.LENGTH_SHORT).show();}
+                if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download - try - func", Toast.LENGTH_SHORT).show();}
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 imageName = cursor.getString(columnIndex);
                 imageName = imageName.substring(0, imageName.lastIndexOf('.')) + ".webp";
                 cursor.close();
             }
 
-            File imageFile = new File(downloadsFolder, imageName);
+            DocumentFile pickedDir = DocumentFile.fromTreeUri(this, selectedFolderUri);
+            DocumentFile newFile = pickedDir.createFile("image/webp", imageName);
 
-            // it shows scary message `Call requires API level 26` but not necessary, working well!
-            try (OutputStream outputStream = Files.newOutputStream(imageFile.toPath())) {
-                if(DEBUG){Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();}
+            try (OutputStream outputStream = getContentResolver().openOutputStream(newFile.getUri())) {
+                if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();}
                 bitmap.compress(Bitmap.CompressFormat.WEBP, getImgQuality(), outputStream);
                 outputStream.flush();
-                Toast.makeText(this, "done!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "saved at " + newFile.getUri().getPath(), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
                 e.printStackTrace();
             }

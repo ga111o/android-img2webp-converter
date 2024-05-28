@@ -60,6 +60,14 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:visibility="gone">
+            <Button
+                android:id="@+id/outputFolderButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="output folder"
+                android:background="@drawable/button"
+                android:layout_marginVertical="10dp"/>
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -70,59 +78,28 @@
                     android:layout_height="wrap_content"
                     android:text="@string/quality"
                     android:textSize="18sp"/>
-
                 <EditText
                     android:id="@+id/qualityEditText"
-                    android:layout_width="135dp"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
                     android:text="100"
                     android:layout_height="50dp"/>
 
-                <Button
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="10dp"
-                    android:text="output folder"
-                    android:background="@drawable/button"/>
-            </LinearLayout>
-
-            <TextView
-                android:layout_marginTop="5dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Blank will keep original size"
-                android:layout_marginBottom="-10dp"
-                android:textColor="#999999"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
                     android:text="size : "
                     android:textSize="18sp"/>
                 <EditText
-                    android:id="@+id/imgSizeWidthEditText"
+                    android:id="@+id/imgSizeEditText"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:height="50dp"
-                    android:hint="width"
-                    android:layout_height="wrap_content"/>
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="x"
-                    android:textSize="18sp"/>
-                <EditText
-                    android:id="@+id/imgSizeHeightEditText"
-                    android:layout_width="0dp"
-                    android:layout_weight="1"
-                    android:height="50dp"
-                    android:hint="height"
-                    android:layout_height="wrap_content"/>
-            </LinearLayout>
+                    android:text="100"
+                    android:layout_height="50dp"/>
 
+
+            </LinearLayout>
 
         </LinearLayout>
 
