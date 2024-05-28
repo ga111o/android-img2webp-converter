@@ -53,6 +53,7 @@
         android:layout_height="wrap_content"
         android:textSize="17sp"
         android:layout_marginStart="-8dp"
+        android:textColor="#222222"
         android:text="@string/advanced_option"/>
         <LinearLayout
             android:id="@+id/advancedOptionsLinearLayout"
@@ -77,12 +78,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/quality"
+                    android:textColor="#222222"
                     android:textSize="18sp"/>
                 <EditText
                     android:id="@+id/qualityEditText"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:text="100"
+                    android:textColor="#222222"
                     android:layout_height="50dp"/>
 
                 <TextView
@@ -90,12 +93,14 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="10dp"
                     android:text="size : "
+                    android:textColor="#222222"
                     android:textSize="18sp"/>
                 <EditText
                     android:id="@+id/imgSizeEditText"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:text="100"
+                    android:textColor="#222222"
                     android:layout_height="50dp"/>
 
 
