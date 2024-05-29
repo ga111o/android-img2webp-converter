@@ -82,10 +82,16 @@ public class MainActivity extends AppCompatActivity {
 
     private Integer getImgQuality(){
         EditText qualityEditText = findViewById(R.id.qualityEditText);
-        Integer quality = Integer.valueOf(qualityEditText.getText().toString());
-
+        Integer quality;
+        try {
+            quality = Integer.valueOf(qualityEditText.getText().toString());
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
+            return null;
+        }
         return quality;
     }
+
 
     private void openImageChooser() {
         if(DEBUG){Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();}
