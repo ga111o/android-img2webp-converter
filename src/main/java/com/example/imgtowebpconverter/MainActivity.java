@@ -41,32 +41,26 @@ public class MainActivity extends AppCompatActivity {
 
     boolean DEBUG = false;
 
+    private void requestPermission() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
+    }
+
+    private boolean checkPermission() {
+        if(DEBUG){Toast.makeText(this, "DEBUG: checkPermission", Toast.LENGTH_SHORT).show();}
+
+        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        return permissionCheck == PackageManager.PERMISSION_GRANTED;
+    }
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-
-        Button selectImgButton = findViewById(R.id.select_img_button);
-        selectImgButton.setOnClickListener(v -> openImageChooser());
-
-        CheckBox advancedOptionsCheckBox = findViewById(R.id.advancedOptionsCheckBox);
-        advancedOptionsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> advancedOptions());
-
-        if (!checkPermission()) {
-            requestPermission();
-        }
-
-        Button outputFolderButton = findViewById(R.id.outputFolderButton);
-        outputFolderButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
-                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                startActivityForResult(intent, 1);
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            } else {
+                Toast.makeText(this, "permission required", Toast.LENGTH_SHORT).show();
             }
-        });
+        }
     }
 
     private void advancedOptions(){
@@ -77,45 +71,6 @@ public class MainActivity extends AppCompatActivity {
             advancedOptionsLinearLayout.setVisibility(View.VISIBLE);
         } else {
             advancedOptionsLinearLayout.setVisibility(View.GONE);
-        }
-    }
-
-    private Integer getImgQuality(){
-        EditText qualityEditText = findViewById(R.id.qualityEditText);
-        Integer quality;
-        try {
-            quality = Integer.valueOf(qualityEditText.getText().toString());
-        } catch (NumberFormatException e) {
-            Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
-            return null;
-        }
-        return quality;
-    }
-
-
-    private void openImageChooser() {
-        if(DEBUG){Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();}
-        Intent intent = new Intent();
-        intent.setType("image/*");
-        intent.setAction(Intent.ACTION_GET_CONTENT);
-        startActivityForResult(Intent.createChooser(intent, "select picture"), PICK_IMAGE_REQUEST);
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if(DEBUG){Toast.makeText(this, "DEBUG: onActivityResult ftf", Toast.LENGTH_SHORT).show();}
-
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            selectedImageUri = data.getData();
-            imageSize();
-        } else if (requestCode == 1 && resultCode == RESULT_OK) {
-            if(DEBUG){Toast.makeText(this, "DEBUG: why its not working......", Toast.LENGTH_SHORT).show();}
-            selectedFolderUri = data.getData();
-            if (selectedFolderUri != null) {
-                getContentResolver().takePersistableUriPermission(selectedFolderUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                Toast.makeText(this, "folder selected", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 
@@ -147,6 +102,18 @@ public class MainActivity extends AppCompatActivity {
         popup.show();
     }
 
+    private Integer getAndProcessImgQuality(){
+        EditText qualityEditText = findViewById(R.id.qualityEditText);
+        Integer quality;
+        try {
+            quality = Integer.valueOf(qualityEditText.getText().toString());
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
+            return null;
+        }
+        return quality;
+    }
+
     private Uri selectedFolderUri;
 
     private Bitmap resizeImage(Bitmap originalImage, float scalePercentage) {
@@ -159,11 +126,11 @@ public class MainActivity extends AppCompatActivity {
         return Bitmap.createScaledBitmap(originalImage, newWidth, newHeight, true);
     }
 
-    private void imageSize() {
-        EditText imgSizeEditText = findViewById(R.id.imgSizeEditText);
+    private void getAndProecssImgScale() {
+        EditText imgScaleEditText = findViewById(R.id.imgScaleEditText);
         float scalePercentage;
         try {
-            scalePercentage = Float.parseFloat(imgSizeEditText.getText().toString());
+            scalePercentage = Float.parseFloat(imgScaleEditText.getText().toString());
         } catch (NumberFormatException e) {
             Toast.makeText(this, "Invalid input", Toast.LENGTH_SHORT).show();
             return;
@@ -172,13 +139,69 @@ public class MainActivity extends AppCompatActivity {
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
             Bitmap resizedBitmap = resizeImage(bitmap, scalePercentage);
-            saveImageToDownloads(resizedBitmap);
+            transAndDownload(resizedBitmap);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void saveImageToDownloads(Bitmap bitmap) {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        Button selectAndTransButton = findViewById(R.id.selectAndTransButton);
+        selectAndTransButton.setOnClickListener(v -> openImageChooser());
+
+        CheckBox advancedOptionsCheckBox = findViewById(R.id.advancedOptionsCheckBox);
+        advancedOptionsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> advancedOptions());
+
+        if (!checkPermission()) {
+            requestPermission();
+        }
+
+        Button outputFolderButton = findViewById(R.id.outputFolderButton);
+        outputFolderButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                intent.addFlags(Intent.FLAG_GRANT_PERSISTABLE_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                startActivityForResult(intent, 1);
+            }
+        });
+    }
+
+
+    private void openImageChooser(){
+        if(DEBUG){Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();}
+        Intent intent = new Intent();
+        intent.setType("image/*");
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        startActivityForResult(Intent.createChooser(intent, "select picture"), PICK_IMAGE_REQUEST);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(DEBUG){Toast.makeText(this, "DEBUG: onActivityResult ftf", Toast.LENGTH_SHORT).show();}
+
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
+            selectedImageUri = data.getData();
+            getAndProecssImgScale();
+        } else if (requestCode == 1 && resultCode == RESULT_OK) {
+            if(DEBUG){Toast.makeText(this, "DEBUG: why its not working......", Toast.LENGTH_SHORT).show();}
+            selectedFolderUri = data.getData();
+            if (selectedFolderUri != null) {
+                getContentResolver().takePersistableUriPermission(selectedFolderUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                Toast.makeText(this, "folder selected", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void transAndDownload(Bitmap bitmap) {
         try {
             if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download func - try", Toast.LENGTH_SHORT).show();}
 
@@ -203,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
 
             try (OutputStream outputStream = getContentResolver().openOutputStream(newFile.getUri())) {
                 if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();}
-                bitmap.compress(Bitmap.CompressFormat.WEBP, getImgQuality(), outputStream);
+                bitmap.compress(Bitmap.CompressFormat.WEBP, getAndProcessImgQuality(), outputStream);
                 outputStream.flush();
                 Toast.makeText(this, "saved at " + newFile.getUri().getPath(), Toast.LENGTH_SHORT).show();
             } catch (Exception e) {
@@ -211,28 +234,6 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             e.printStackTrace();
-        }
-    }
-
-    private boolean checkPermission() {
-        if(DEBUG){Toast.makeText(this, "DEBUG: checkPermission", Toast.LENGTH_SHORT).show();}
-
-        int permissionCheck = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-        return permissionCheck == PackageManager.PERMISSION_GRANTED;
-    }
-
-    private void requestPermission() {
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, PERMISSION_REQUEST_CODE);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            } else {
-                Toast.makeText(this, "permission required", Toast.LENGTH_SHORT).show();
-            }
         }
     }
 }
