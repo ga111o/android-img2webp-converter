@@ -84,7 +84,7 @@
                     android:id="@+id/qualityEditText"
                     android:layout_width="0dp"
                     android:layout_weight="1"
-                    android:text="100"
+                    android:text="95"
                     android:textColor="#222222"
                     android:layout_height="50dp"/>
 
@@ -96,7 +96,7 @@
                     android:textColor="#222222"
                     android:textSize="18sp"/>
                 <EditText
-                    android:id="@+id/imgSizeEditText"
+                    android:id="@+id/imgScaleEditText"
                     android:layout_width="0dp"
                     android:layout_weight="1"
                     android:text="100"
@@ -113,7 +113,7 @@
             android:layout_height="match_parent"
             android:gravity="bottom">
             <Button
-                android:id="@+id/select_img_button"
+                android:id="@+id/selectAndTransButton"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:textSize="20sp"
