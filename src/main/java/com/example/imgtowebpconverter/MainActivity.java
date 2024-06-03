@@ -1,10 +1,15 @@
 package com.example.imgtowebpconverter;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.media.JetPlayer;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -58,7 +63,6 @@ public class MainActivity extends AppCompatActivity {
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             } else {
-                Toast.makeText(this, "permission required", Toast.LENGTH_SHORT).show();
             }
         }
     }
@@ -68,10 +72,31 @@ public class MainActivity extends AppCompatActivity {
         CheckBox advancedOptionsCheckBox = findViewById(R.id.advancedOptionsCheckBox);
 
         if(advancedOptionsCheckBox.isChecked()){
+            advancedOptionsLinearLayout.setTranslationY(-advancedOptionsLinearLayout.getHeight()+250);
             advancedOptionsLinearLayout.setVisibility(View.VISIBLE);
+            ObjectAnimator translateY = ObjectAnimator.ofFloat(advancedOptionsLinearLayout, "translationY", -advancedOptionsLinearLayout.getHeight()+250, 0);
+            ObjectAnimator fadeIn = ObjectAnimator.ofFloat(advancedOptionsLinearLayout, "alpha", 0f, 1f);
+            AnimatorSet animSet = new AnimatorSet();
+            animSet.playTogether(translateY, fadeIn);
+            animSet.setDuration(150);
+            animSet.start();
         } else {
-            advancedOptionsLinearLayout.setVisibility(View.GONE);
+            ObjectAnimator translateY = ObjectAnimator.ofFloat(advancedOptionsLinearLayout, "translationY", 0, -advancedOptionsLinearLayout.getHeight()+250);
+            ObjectAnimator fadeOut = ObjectAnimator.ofFloat(advancedOptionsLinearLayout, "alpha", 1f, 0f);
+            AnimatorSet animSet = new AnimatorSet();
+            animSet.playTogether(translateY, fadeOut);
+            animSet.setDuration(150);
+            animSet.addListener(new AnimatorListenerAdapter() {
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    super.onAnimationEnd(animation);
+                    advancedOptionsLinearLayout.setVisibility(View.GONE);
+                }
+            });
+            animSet.start();
         }
+
+
     }
 
     @Override
@@ -173,7 +198,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-
 
     private void openImageChooser(){
         if(DEBUG){Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();}
