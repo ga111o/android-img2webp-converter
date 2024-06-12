@@ -206,7 +206,6 @@ public class MainActivity extends AppCompatActivity {
     private void openImageChooser(){
         Intent intent = new Intent();
         intent.setType("image/*");
-        // 여러 이미지를 선택할 수 있도록 EXTRA_ALLOW_MULTIPLE을 true로 설정했습니다.
         intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "select picture"), PICK_IMAGE_REQUEST);
@@ -240,7 +239,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    // 각 이미지에 대해 다운로드를 수행하기 위해 Uri를 매개변수로 받도록 수정했습니다.
     private void transAndDownload(Bitmap bitmap, Uri selectedImageUri) {
         try {
             if (selectedFolderUri == null) {
