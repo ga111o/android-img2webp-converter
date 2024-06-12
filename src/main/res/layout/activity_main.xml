@@ -109,9 +109,10 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:orientation="vertical"
             android:gravity="bottom">
             <Button
-                android:id="@+id/selectAndTransButton"
+                android:id="@+id/selectImgsButton"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:textSize="20sp"

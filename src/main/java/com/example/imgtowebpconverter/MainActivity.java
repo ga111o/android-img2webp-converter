@@ -37,12 +37,17 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import android.net.Uri;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
     private static final int PICK_IMAGE_REQUEST = 2;
-    private Uri selectedImageUri;
+//    private Uri selectedImageUri;
+
+    private List<Uri> selectedImageUris = new ArrayList<>();
 
     boolean DEBUG = false;
 
@@ -151,7 +156,7 @@ public class MainActivity extends AppCompatActivity {
         return Bitmap.createScaledBitmap(originalImage, newWidth, newHeight, true);
     }
 
-    private void getAndProecssImgScale() {
+    private void getAndProecssImgScale(Uri selectedImageUri) {
         EditText imgScaleEditText = findViewById(R.id.imgScaleEditText);
         float scalePercentage;
         try {
@@ -164,20 +169,19 @@ public class MainActivity extends AppCompatActivity {
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), selectedImageUri);
             Bitmap resizedBitmap = resizeImage(bitmap, scalePercentage);
-            transAndDownload(resizedBitmap);
+            transAndDownload(resizedBitmap, selectedImageUri);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Button selectAndTransButton = findViewById(R.id.selectAndTransButton);
-        selectAndTransButton.setOnClickListener(v -> openImageChooser());
+        Button selectImgsButton = findViewById(R.id.selectImgsButton);
+        selectImgsButton.setOnClickListener(v -> openImageChooser());
 
         CheckBox advancedOptionsCheckBox = findViewById(R.id.advancedOptionsCheckBox);
         advancedOptionsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> advancedOptions());
@@ -200,9 +204,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void openImageChooser(){
-        if(DEBUG){Toast.makeText(this, "DEBUG: openImgChooser", Toast.LENGTH_SHORT).show();}
         Intent intent = new Intent();
         intent.setType("image/*");
+        // 여러 이미지를 선택할 수 있도록 EXTRA_ALLOW_MULTIPLE을 true로 설정했습니다.
+        intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true);
         intent.setAction(Intent.ACTION_GET_CONTENT);
         startActivityForResult(Intent.createChooser(intent, "select picture"), PICK_IMAGE_REQUEST);
     }
@@ -212,11 +217,21 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
         if(DEBUG){Toast.makeText(this, "DEBUG: onActivityResult ftf", Toast.LENGTH_SHORT).show();}
 
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            selectedImageUri = data.getData();
-            getAndProecssImgScale();
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK) {
+            // 여러 이미지를 처리하기 위해 ClipData를 사용하도록 수정했습니다.
+            if(data.getClipData() != null) {
+                int count = data.getClipData().getItemCount();
+                for(int i = 0; i < count; i++) {
+                    Uri imageUri = data.getClipData().getItemAt(i).getUri();
+                    selectedImageUris.add(imageUri);
+                    getAndProecssImgScale(imageUri); // 각 이미지에 대해 처리를 수행하도록 수정했습니다.
+                }
+            } else if(data.getData() != null) {
+                Uri imageUri = data.getData();
+                selectedImageUris.add(imageUri);
+                getAndProecssImgScale(imageUri); // 각 이미지에 대해 처리를 수행하도록 수정했습니다.
+            }
         } else if (requestCode == 1 && resultCode == RESULT_OK) {
-            if(DEBUG){Toast.makeText(this, "DEBUG: why its not working......", Toast.LENGTH_SHORT).show();}
             selectedFolderUri = data.getData();
             if (selectedFolderUri != null) {
                 getContentResolver().takePersistableUriPermission(selectedFolderUri, Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
@@ -225,10 +240,9 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void transAndDownload(Bitmap bitmap) {
+    // 각 이미지에 대해 다운로드를 수행하기 위해 Uri를 매개변수로 받도록 수정했습니다.
+    private void transAndDownload(Bitmap bitmap, Uri selectedImageUri) {
         try {
-            if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download func - try", Toast.LENGTH_SHORT).show();}
-
             if (selectedFolderUri == null) {
                 selectedFolderUri = Uri.fromFile(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS));
                 Toast.makeText(this, "saved at Download folder", Toast.LENGTH_SHORT).show();
@@ -238,7 +252,6 @@ public class MainActivity extends AppCompatActivity {
             Cursor cursor = getContentResolver().query(selectedImageUri, filePathColumn, null, null, null);
             String imageName = "converted_image";
             if (cursor != null && cursor.moveToFirst()) {
-                if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download - try - func", Toast.LENGTH_SHORT).show();}
                 int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
                 imageName = cursor.getString(columnIndex);
                 imageName = imageName.substring(0, imageName.lastIndexOf('.')) + ".webp";
@@ -249,7 +262,6 @@ public class MainActivity extends AppCompatActivity {
             DocumentFile newFile = pickedDir.createFile("image/webp", imageName);
 
             try (OutputStream outputStream = getContentResolver().openOutputStream(newFile.getUri())) {
-                if (DEBUG) {Toast.makeText(this, "DEBUG: saveImg2Download - try - try", Toast.LENGTH_SHORT).show();}
                 bitmap.compress(Bitmap.CompressFormat.WEBP, getAndProcessImgQuality(), outputStream);
                 outputStream.flush();
                 Toast.makeText(this, "saved at " + newFile.getUri().getPath(), Toast.LENGTH_SHORT).show();
